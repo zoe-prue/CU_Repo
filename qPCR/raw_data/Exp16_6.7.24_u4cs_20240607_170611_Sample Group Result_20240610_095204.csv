@@ -1,0 +1,24 @@
+# File Name: /Volumes/USB DISK/qPCR/Exp16_6.7.24_u4cs_20240607_170611.eds
+# Comment: 
+# Operator: Admin
+# Barcode: 
+# Instrument Type: QuantStudio™ 6 Pro System
+# Block Type: 384-Well Block
+# Instrument Name: QS6Pro-2778624010008
+# Instrument Serial Number: 2778624010008
+# Heated Cover Serial Number: 2779324012939
+# Block serial number: 2778323082972
+# Run Start Date/Time: 2024-06-07 05:05:12 PM EDT
+# Run End Data/Time: 2024-06-07 06:39:43 PM EDT
+# Run Duration: 94 minutes 30 seconds
+# Sample Volume: 20.0
+# Cover Temperature: 105.0
+# Passive Reference: ROX
+# PCR Stage/Step Number: Stage 2 Step 2
+# Quantification Cycle Method: CT
+# Analysis Date/Time: 2024-06-10 09:51:37 AM EDT
+# Software Name and Version: Design & Analysis Software v2.8.0
+# Plugin Name and Version: Primary Analysis v1.8.1, Relative Quantification v1.7.0
+# Reduce dye signal crosstalk by algorithm: No (Default)
+# Exported On: 2024-06-10 09:52:04 AM EDT
+"Biological/Sample Group","Target","EqCq Mean","Adjusted EqCq Mean","Delta EqCq Mean","Delta EqCq SD","Delta EqCq SE","Delta Delta EqCq","Rq","Rq Min","Rq Max"
