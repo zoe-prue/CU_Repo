@@ -1,0 +1,318 @@
+Entering Cluster CU 1.29.25
+
+Last login: Fri Jan 10 16:17:24 on console
+(base) zoeprue@zoes-air-2 ~ % ssh zp2280@hpc.c2b2.columbia.edu
+The authenticity of host 'hpc.c2b2.columbia.edu (156.145.14.204)' can't be established.
+ED25519 key fingerprint is SHA256:6xWCNt/SXBBhAmjkFEBLKydzV1YocEHmEd1tMZKE+mU.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'hpc.c2b2.columbia.edu' (ED25519) to the list of known hosts.
+zp2280@hpc.c2b2.columbia.edu's password: 
+Permission denied, please try again.
+zp2280@hpc.c2b2.columbia.edu's password: 
+Last failed login: Wed Jan 29 15:25:15 EST 2025 from 10.118.156.43 on ssh:notty
+There was 1 failed login attempt since the last successful login.
+15:25:31 zp2280@login1:~# ls
+15:25:53 zp2280@login1:~# pwd
+/users/zp2280
+15:26:00 zp2280@login1:~# cd /groups/db_3700
+-bash: cd: /groups/db_3700: No such file or directory
+15:30:17 zp2280@login1:~# cd /groups/db_3700/
+-bash: cd: /groups/db_3700/: No such file or directory
+15:30:24 zp2280@login1:~# cd /groups/db3700_gp/
+15:30:54 zp2280@login1:db3700_gp# ls
+SHARED  am5352  er3277  hr2587  jt3580  ma4744  mr4527  po2321  zp2280
+15:30:58 zp2280@login1:db3700_gp# cd zp2280/
+15:31:37 zp2280@login1:zp2280# ls
+raw_data
+15:31:40 zp2280@login1:zp2280# cd raw_data/
+15:31:55 zp2280@login1:raw_data# ls
+RNAseq_Exp21-25-26
+15:31:56 zp2280@login1:raw_data# cd RNAseq_Exp21-25-26/
+15:32:03 zp2280@login1:RNAseq_Exp21-25-26# ls
+30-1116451817
+15:32:05 zp2280@login1:RNAseq_Exp21-25-26# cd 30-1116451817/
+15:32:11 zp2280@login1:30-1116451817# ls
+00_fastq
+15:32:14 zp2280@login1:30-1116451817# cd 00_fastq/
+15:32:22 zp2280@login1:00_fastq# ls
+Ep26-JAK1-E139K-1_R1_001.fastq.gz  Ep26-JAK1-WT-3_R1_001.fastq.gz      Exp21-JAK1-WT-1_R2_001.fastq.gz     Exp25-JAK1-WT-1_R1_001.fastq.gz
+Ep26-JAK1-E139K-1_R2_001.fastq.gz  Ep26-JAK1-WT-3_R2_001.fastq.gz      Exp21-JAK1-WT-2_R1_001.fastq.gz     Exp25-JAK1-WT-1_R2_001.fastq.gz
+Ep26-JAK1-E139K-2_R1_001.fastq.gz  Exp21-JAK1-S703I-1_R1_001.fastq.gz  Exp21-JAK1-WT-2_R2_001.fastq.gz     Exp25-JAK1-WT-2_R1_001.fastq.gz
+Ep26-JAK1-E139K-2_R2_001.fastq.gz  Exp21-JAK1-S703I-1_R2_001.fastq.gz  Exp25-JAK1-E139K-3_R1_001.fastq.gz  Exp25-JAK1-WT-2_R2_001.fastq.gz
+Ep26-JAK1-S703I-3_R1_001.fastq.gz  Exp21-JAK1-WT-1_R1_001.fastq.gz     Exp25-JAK1-E139K-3_R2_001.fastq.gz
+15:32:23 zp2280@login1:00_fastq# module avail
+
+----------------------------------------------------- /opt/ohpc/pub/moduledeps/gnu13-openmpi5 ------------------------------------------------------
+   boost/1.81.0    dimemas/5.4.2    extrae/3.8.3    imb/2021.3    omb/7.3    scalasca/2.5    scorep/7.1    sionlib/1.7.7    tau/2.31.1
+
+---------------------------------------------------------- /opt/ohpc/pub/moduledeps/gnu13 ----------------------------------------------------------
+   R/4.2.1    likwid/5.3.0    mpich/3.4.3-ofi    mpich/3.4.3-ucx (D)    mvapich2/2.3.7    openblas/0.3.21    openmpi5/5.0.3 (L)    pdtoolkit/3.25.1
+
+------------------------------------------------------------ /opt/ohpc/pub/modulefiles -------------------------------------------------------------
+   EasyBuild/4.9.1          cmake/3.24.2             gnu12/12.2.0         hwloc/2.9.3      (L)    ohpc       (L)    samtools/1.21
+   alphafold/2.3            conda/3                  gnu13/13.2.0  (L)    julia/1.11.1            os                tensorflow-gpu/2.16.1
+   autotools         (L)    cuda/12.4                gnu14/14.2.0         libfabric/1.18.0 (L)    papi/6.0.0        ucx/1.15.0            (L)
+   cellranger/9.0.0         cudnn/cudnn9.6-cuda12    gurobi/10.0.3        magpie/3.0              pmix/4.2.9        valgrind/3.20.0
+   charliecloud/0.15        demuxlet/1.1             gurobi/11.0.3 (D)    matlab/R2023a           prun/2.2   (L)
+
+  Where:
+   D:  Default Module
+   L:  Module is loaded
+
+If the avail list is too long consider trying:
+
+"module --default avail" or "ml -d av" to just list the default modules.
+"module overview" or "ml ov" to display the number of modules for each name.
+
+Use "module spider" to find all possible modules and extensions.
+Use "module keyword key1 key2 ..." to search for all possible modules matching any of the "keys".
+
+
+15:38:41 zp2280@login1:00_fastq# salloc
+salloc: Granted job allocation 797674
+salloc: Waiting for resource configuration
+salloc: Nodes c0702 are ready for job
+export SLURM_SCRATCH=/localscratch/zp2280/797674
+                                                15:41:35 zp2280@c0702:00_fastq# module load conda
+15:43:48 zp2280@c0702:00_fastq# conda
+usage: conda [-h] [-v] [--no-plugins] [-V] COMMAND ...
+
+conda is a tool for managing and deploying applications, environments and packages.
+
+options:
+  -h, --help          Show this help message and exit.
+  -v, --verbose       Can be used multiple times. Once for detailed output, twice for INFO logging, thrice for DEBUG logging, four times for TRACE
+                      logging.
+  --no-plugins        Disable all plugins that are not built into conda.
+  -V, --version       Show the conda version number and exit.
+
+commands:
+  The following built-in and plugins subcommands are available.
+
+  COMMAND
+    activate          Activate a conda environment.
+    clean             Remove unused packages and caches.
+    commands          List all available conda subcommands (including those from plugins). Generally only used by tab-completion.
+    compare           Compare packages between conda environments.
+    config            Modify configuration values in .condarc.
+    create            Create a new conda environment from a list of specified packages.
+    deactivate        Deactivate the current active conda environment.
+    doctor            Display a health report for your environment.
+    export            Export a given environment
+    info              Display information about current conda install.
+    init              Initialize conda for shell interaction.
+    install           Install a list of packages into a specified conda environment.
+    list              List installed packages in a conda environment.
+    notices           Retrieve latest channel notifications.
+    package           Create low-level conda packages. (EXPERIMENTAL)
+    remove (uninstall)
+                      Remove a list of packages from a specified conda environment.
+    rename            Rename an existing environment.
+    repoquery         Advanced search for repodata.
+    run               Run an executable in a conda environment.
+    search            Search for packages and display associated information using the MatchSpec format.
+    update (upgrade)  Update conda packages to the latest compatible version.
+15:43:58 zp2280@c0702:00_fastq# module unload conda
+15:44:09 zp2280@c0702:00_fastq# conda
+bash: conda: command not found
+15:44:11 zp2280@c0702:00_fastq# module load conda
+15:44:16 zp2280@c0702:00_fastq# coda
+bash: coda: command not found
+15:44:18 zp2280@c0702:00_fastq# conda
+usage: conda [-h] [-v] [--no-plugins] [-V] COMMAND ...
+
+conda is a tool for managing and deploying applications, environments and packages.
+
+options:
+  -h, --help          Show this help message and exit.
+  -v, --verbose       Can be used multiple times. Once for detailed output, twice for INFO logging, thrice for DEBUG logging, four times for TRACE
+                      logging.
+  --no-plugins        Disable all plugins that are not built into conda.
+  -V, --version       Show the conda version number and exit.
+
+commands:
+  The following built-in and plugins subcommands are available.
+
+  COMMAND
+    activate          Activate a conda environment.
+    clean             Remove unused packages and caches.
+    commands          List all available conda subcommands (including those from plugins). Generally only used by tab-completion.
+    compare           Compare packages between conda environments.
+    config            Modify configuration values in .condarc.
+    create            Create a new conda environment from a list of specified packages.
+    deactivate        Deactivate the current active conda environment.
+    doctor            Display a health report for your environment.
+    export            Export a given environment
+    info              Display information about current conda install.
+    init              Initialize conda for shell interaction.
+    install           Install a list of packages into a specified conda environment.
+    list              List installed packages in a conda environment.
+    notices           Retrieve latest channel notifications.
+    package           Create low-level conda packages. (EXPERIMENTAL)
+    remove (uninstall)
+                      Remove a list of packages from a specified conda environment.
+    rename            Rename an existing environment.
+    repoquery         Advanced search for repodata.
+    run               Run an executable in a conda environment.
+    search            Search for packages and display associated information using the MatchSpec format.
+    update (upgrade)  Update conda packages to the latest compatible version.
+15:44:20 zp2280@c0702:00_fastq# create -n mapping_env
+bash: create: command not found
+15:49:11 zp2280@c0702:00_fastq# conda create -n mapping_env
+Channels:
+ - conda-forge
+Platform: linux-64
+Collecting package metadata (repodata.json): done
+Solving environment: done
+
+
+==> WARNING: A newer version of conda exists. <==
+    current version: 24.9.2
+    latest version: 25.1.0
+
+Please update conda by running
+
+    $ conda update -n base -c conda-forge conda
+
+
+
+## Package Plan ##
+
+  environment location: /users/zp2280/.conda/envs/mapping_env
+
+
+
+Proceed ([y]/n)? y
+
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done
+#
+# To activate this environment, use
+#
+#     $ conda activate mapping_env
+#
+# To deactivate an active environment, use
+#
+#     $ conda deactivate
+
+15:49:42 zp2280@c0702:00_fastq# source activate base
+(base) 15:50:02 zp2280@c0702:00_fastq# conda activate mapping_env
+(mapping_env) 15:50:14 zp2280@c0702:00_fastq# conda isntall -c bioconda -n mapping_env kallisto
+usage: conda [-h] [-v] [--no-plugins] [-V] COMMAND ...
+conda: error: argument COMMAND: invalid choice: 'isntall' (choose from 'activate', 'clean', 'commands', 'compare', 'config', 'create', 'deactivate', 'env', 'export', 'info', 'init', 'install', 'list', 'notices', 'package', 'doctor', 'repoquery', 'remove', 'uninstall', 'rename', 'run', 'search', 'update', 'upgrade')
+(mapping_env) 15:51:54 zp2280@c0702:00_fastq# conda installl -c bioconda -n mapping_env kallisto
+usage: conda [-h] [-v] [--no-plugins] [-V] COMMAND ...
+conda: error: argument COMMAND: invalid choice: 'installl' (choose from 'activate', 'clean', 'commands', 'compare', 'config', 'create', 'deactivate', 'env', 'export', 'info', 'init', 'install', 'list', 'notices', 'package', 'doctor', 'repoquery', 'remove', 'uninstall', 'rename', 'run', 'search', 'update', 'upgrade')
+(mapping_env) 15:52:21 zp2280@c0702:00_fastq# conda install -c bioconda -n mapping_env kallisto
+Channels:
+ - bioconda
+ - conda-forge
+Platform: linux-64
+Collecting package metadata (repodata.json): done
+Solving environment: done
+
+
+==> WARNING: A newer version of conda exists. <==
+    current version: 24.9.2
+    latest version: 25.1.0
+
+Please update conda by running
+
+    $ conda update -n base -c conda-forge conda
+
+
+
+## Package Plan ##
+
+  environment location: /users/zp2280/.conda/envs/mapping_env
+
+  added / updated specs:
+    - kallisto
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    c-ares-1.34.4              |       hb9d3cd8_0         201 KB  conda-forge
+    ca-certificates-2024.12.14 |       hbcca054_0         153 KB  conda-forge
+    hdf5-1.14.3                |nompi_h2d575fe_109         3.7 MB  conda-forge
+    kallisto-0.51.1            |       ha4fb952_1         967 KB  bioconda
+    libaec-1.1.3               |       h59595ed_0          35 KB  conda-forge
+    libcurl-8.11.1             |       h332b0f4_0         413 KB  conda-forge
+    libedit-3.1.20240808       | pl5321h7949ede_0         132 KB  conda-forge
+    libgcc-14.2.0              |       h77fa898_1         829 KB  conda-forge
+    libgcc-ng-14.2.0           |       h69a702a_1          53 KB  conda-forge
+    libgfortran-14.2.0         |       h69a702a_1          53 KB  conda-forge
+    libgfortran5-14.2.0        |       hd5240d6_1         1.4 MB  conda-forge
+    libgomp-14.2.0             |       h77fa898_1         450 KB  conda-forge
+    liblzma-5.6.3              |       hb9d3cd8_1         109 KB  conda-forge
+    libnghttp2-1.64.0          |       h161d5f1_0         632 KB  conda-forge
+    libssh2-1.11.1             |       hf672d98_0         297 KB  conda-forge
+    libstdcxx-14.2.0           |       hc0a3c3a_1         3.7 MB  conda-forge
+    libstdcxx-ng-14.2.0        |       h4852527_1          53 KB  conda-forge
+    ncurses-6.5                |       h2d0b736_2         873 KB  conda-forge
+    openssl-3.4.0              |       h7b32b05_1         2.8 MB  conda-forge
+    ------------------------------------------------------------
+                                           Total:        16.8 MB
+
+The following NEW packages will be INSTALLED:
+
+  _libgcc_mutex      conda-forge/linux-64::_libgcc_mutex-0.1-conda_forge 
+  _openmp_mutex      conda-forge/linux-64::_openmp_mutex-4.5-2_gnu 
+  bzip2              conda-forge/linux-64::bzip2-1.0.8-h4bc722e_7 
+  c-ares             conda-forge/linux-64::c-ares-1.34.4-hb9d3cd8_0 
+  ca-certificates    conda-forge/linux-64::ca-certificates-2024.12.14-hbcca054_0 
+  hdf5               conda-forge/linux-64::hdf5-1.14.3-nompi_h2d575fe_109 
+  kallisto           bioconda/linux-64::kallisto-0.51.1-ha4fb952_1 
+  keyutils           conda-forge/linux-64::keyutils-1.6.1-h166bdaf_0 
+  krb5               conda-forge/linux-64::krb5-1.21.3-h659f571_0 
+  libaec             conda-forge/linux-64::libaec-1.1.3-h59595ed_0 
+  libcurl            conda-forge/linux-64::libcurl-8.11.1-h332b0f4_0 
+  libedit            conda-forge/linux-64::libedit-3.1.20240808-pl5321h7949ede_0 
+  libev              conda-forge/linux-64::libev-4.33-hd590300_2 
+  libgcc             conda-forge/linux-64::libgcc-14.2.0-h77fa898_1 
+  libgcc-ng          conda-forge/linux-64::libgcc-ng-14.2.0-h69a702a_1 
+  libgfortran        conda-forge/linux-64::libgfortran-14.2.0-h69a702a_1 
+  libgfortran5       conda-forge/linux-64::libgfortran5-14.2.0-hd5240d6_1 
+  libgomp            conda-forge/linux-64::libgomp-14.2.0-h77fa898_1 
+  liblzma            conda-forge/linux-64::liblzma-5.6.3-hb9d3cd8_1 
+  libnghttp2         conda-forge/linux-64::libnghttp2-1.64.0-h161d5f1_0 
+  libssh2            conda-forge/linux-64::libssh2-1.11.1-hf672d98_0 
+  libstdcxx          conda-forge/linux-64::libstdcxx-14.2.0-hc0a3c3a_1 
+  libstdcxx-ng       conda-forge/linux-64::libstdcxx-ng-14.2.0-h4852527_1 
+  libzlib            conda-forge/linux-64::libzlib-1.3.1-hb9d3cd8_2 
+  ncurses            conda-forge/linux-64::ncurses-6.5-h2d0b736_2 
+  openssl            conda-forge/linux-64::openssl-3.4.0-h7b32b05_1 
+  zstd               conda-forge/linux-64::zstd-1.5.6-ha6fb4c9_0 
+
+
+Proceed ([y]/n)? y
+
+
+Downloading and Extracting Packages:
+                                                                                                                                                                         
+Preparing transaction: done                                                                                                                                              
+Verifying transaction: done                                                                                                                                              
+Executing transaction: done                                                                                                                                              
+(mapping_env) 15:52:52 zp2280@c0702:00_fastq# kallisto                                                                                                                   
+kallisto 0.51.1                                                                                                                                                          
+                                                                                                                                                                         
+Usage: kallisto <CMD> [arguments] ..                                                                                                                                     
+                                                                                                                                                                         
+Where <CMD> can be one of:                                                                                                                                               
+                                                                                                                                                                         
+    index         Builds a kallisto index                                                                                                                                
+    quant         Runs the quantification algorithm                                                                                                                      
+    quant-tcc     Runs quantification on transcript-compatibility counts                                                                                                 
+    bus           Generate BUS files for single-cell data                                                                                                                
+    h5dump        Converts HDF5-formatted results to plaintext                                                                                                           
+    inspect       Inspects and gives information about an index                                                                                                          
+    version       Prints version information                                                                                                                             
+    cite          Prints citation information                                                                                                                            
+
+Running kallisto <CMD> without arguments prints usage information for <CMD>
+
+(mapping_env) 15:53:00 zp2280@c0702:00_fastq# 

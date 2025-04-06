@@ -1,0 +1,22 @@
+## first, login in to cluster (C2B2)
+ssh zp2280@login.c2b2.columbia.edu
+
+## navigate to the folder you want to put the data
+cd /ifs/archive/db3700_gp/zp2280
+
+## start a screen to download so the download doesn't disconnect
+screen -S Azenta_download
+
+## login to azenta on the cluster when you are in the screen
+sftp zp2280_cumc_columbia@sftp.genewiz.com
+## password: MnFfzrvcr48ubuYSixg0
+
+## now we're in azenta's sftp, and we will set up the data transfer
+lcd /ifs/archive/db3700_gp/zp2280/raw_data/RNAseq_Exp21-25-26/
+
+## on azenta's sftp, view your files
+ls
+## 30-1116451817 (this is the correct project identifier)
+
+## download all files recursively in the project folder
+get -r 30-1116451817/

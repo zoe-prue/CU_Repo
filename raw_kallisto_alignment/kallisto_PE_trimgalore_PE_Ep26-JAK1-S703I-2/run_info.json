@@ -1,0 +1,14 @@
+{
+	"n_targets": 194360,
+	"n_bootstraps": 0,
+	"n_processed": 29923330,
+	"n_pseudoaligned": 25510202,
+	"n_unique": 6275593,
+	"p_pseudoaligned": 85.3,
+	"p_unique": 21.0,
+	"kallisto_version": "0.51.1",
+	"index_version": 13,
+	"k-mer length": 31,
+	"start_time": "Fri Feb 21 13:06:21 2025",
+	"call": "kallisto quant -i /groups/db3700_gp/SHARED/kallisto_indexes/Homo_sapiens.GRCh38.87.v13.index -o /groups/db3700_gp/zp2280/raw_data/RNAseq_Exp21-25-26/aligned_fastqs_kallisto//kallisto_PE_trimgalore_PE_Ep26-JAK1-S703I-2 Ep26-JAK1-S703I-2_R1_001_val_1.fq.gz Ep26-JAK1-S703I-2_R2_001_val_2.fq.gz"
+}
