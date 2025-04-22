@@ -5,7 +5,7 @@ library(tibble)
 
 ###### Variables to change ########
 fdr_threshold <- 0.2
-results_dir <- "~/Desktop/CU_coding/RNA-seq/DGE_RNAseq/DGE_outputs/DGE_by_experiment_comparisons/"
+results_dir <- "~/Desktop/CU_coding/RNA-seq_2/DEgenes"
 ###### End variables #############
 
 # Load and prepare data ----
@@ -253,6 +253,12 @@ write.csv(sig_counts, paste0(results_dir,
                              "_fdr_", fdr_threshold, 
                              ".csv"), row.names = FALSE)
 
+
+
+
+#####################
+
+
 library(ggplot2)
 library(dplyr)
 
@@ -261,9 +267,6 @@ sig_counts$label <- paste0("Exp ", sig_counts$experiment, ": ", sig_counts$compa
 
 # Ensure label is a factor for consistent facet order
 sig_counts$label <- factor(sig_counts$label)
-
-library(ggplot2)
-library(dplyr)
 
 # Create faceting label
 sig_counts <- sig_counts %>%
@@ -294,3 +297,12 @@ print(p)
 pdf("test_volcano.pdf", width = 10, height = 7)
 print(p)
 dev.off()
+
+
+###########################################################
+### real volcano plots
+
+
+
+
+

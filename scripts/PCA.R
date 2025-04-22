@@ -14,10 +14,11 @@ library(grid)
 library(gridExtra)
 library(ggfortify)
 
-setwd("~/Desktop/CU_coding/RNA-seq/DGE_RNAseq/")
-results_dir <- "~/Desktop/CU_coding/RNA-seq/DGE_RNAseq/PCA/"
+setwd("~/Desktop/CU_coding/RNA-seq/RNA-seq_2/meta_data/")
+results_dir <- "~/Desktop/CU_coding/RNA-seq_2/PCA_plots/"
 
 # Read in metadata
+#change working direct manually if needed
 meta_data <- read.csv("RNAseq_study_design.csv", header = TRUE)
 rownames(meta_data) <- meta_data$sample
 
@@ -33,7 +34,7 @@ setwd("~/Desktop/CU_coding/RNA-seq/DGE_RNAseq/log2cpm_expression")
 
 # Read in expression data
 # can just go to file and setwd
-exp_data <- read.table("GE_matrix_corrected_Group_logCPM_voomed.txt", header = TRUE, sep = ",")
+exp_data <- read.table("GE_matrix_corrected_experiment_no_batch_effect_logCPM_voomed.txt", header = TRUE, sep = ",")
 colnames(exp_data) <- gsub("\\.", "-", colnames(exp_data))
 
 # Filter exp_data to match meta_data
@@ -53,17 +54,21 @@ if (!all(colnames(exp_data_filtered) %in% rownames(meta_data_filtered))) {
 }
 
 # Perform PCA
-pca <- prcomp(t(exp_data_filtered), scale. = TRUE)
+pca <- prcomp(t(exp_data_filtered), scale. = FALSE)
+
+##### set your wd to PCA_plots manually
 
 # Create PCA plots
-pdf(paste0(results_dir, "PCA_combined_corrected.pdf"), width = 7, height = 5)  # Portrait orientation
+pdf(paste0(results_dir, "PCA_no_batch_1_2_scale_FALSE.pdf"), width = 7, height = 5)  # Portrait orientation
 
 # Create PCA plot
 p_combined_corrected <- autoplot(pca, data = meta_data_filtered,
                                  colour = 'group', 
                                  shape = 'experiment',
                                  size = 2,
-                                 alpha = 0.6) +
+                                 alpha = 0.6, 
+                                 x = 1,
+                                 y = 2) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         legend.position = "right", legend.title = element_blank(),
@@ -72,7 +77,7 @@ p_combined_corrected <- autoplot(pca, data = meta_data_filtered,
         plot.title = element_text(size = 10),
         axis.title.x = element_text(size = 9), axis.title.y = element_text(size = 9)) +
   scale_fill_manual(values = c("#aba1f9", "blue", "#228B22")) +
-  ggtitle("PCA by Group and Experiment")
+  ggtitle("PCA 1 and 2 by Group and Experiment no Batch Effect (Scale = False)")
 
 # Print the plot
 print(p_combined_corrected)
