@@ -68,7 +68,7 @@ volcano_plot_labeled <- ggplot(DEgenes, aes(x = logFC, y = -log10(pvalue))) +
   facet_wrap(~ comparison, scales = "free") +
   labs(x = "Log2 Fold Change", 
        y = "-Log10(p-value)",
-       title = "Facetted Volcano Plots with Top Gene Labels",
+       title = "Volcano Plots by Comparison with Batch Effect",
        color = "Significant") +
   theme_bw() +
   theme(legend.position = "bottom",
