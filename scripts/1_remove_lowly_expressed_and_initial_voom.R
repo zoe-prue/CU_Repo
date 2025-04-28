@@ -11,7 +11,7 @@ library(limma)
 
 setwd("~/Desktop/CU_coding/RNA-seq/DGE_RNAseq")
 results_dir <- "lowly_expressed_genes_removed/"
-GE <- read.table("counts_kallisto/Homo_sapiens.GRCh38.87.kallisto.gene_level.lengthScaledTPM_counts_HGNCsymbols.txt", header = TRUE, sep = ",")
+GE <- read.table("~/Desktop/RNA-seq_big_files/counts_kallistoHomo_sapiens.GRCh38.87.kallisto.gene_level.lengthScaledTPM_counts_HGNCsymbols.txt", header = TRUE, sep = ",")
 setwd("~/Desktop/CU_coding/RNA-seq/meta_data")
 meta_data <- read.csv("RNAseq_study_design.csv") %>%
   filter(sample != "Ep26-JAK1-WT-3")
@@ -75,6 +75,9 @@ pdf(paste0(results_dir,"voom_after_lowly_expressed_removal.pdf"))
 v <- voom(dge, design, plot = TRUE)
 dev.off()
 setwd("~/Desktop/CU_coding/RNA-seq/DGE_RNAseq")
+
+
+
 write.table(v, "log2cpm_expression/GE_matrix_corrected_experiment_with_batch_effect_logCPM_voomed.txt", quote = FALSE, sep = ",")
 
 
@@ -102,6 +105,6 @@ corrected_expression <- v$E - vfit$coefficients[,2] %*% t(design_simple[,2]) -
 corrected_df <- cbind(hgnc_symbol = v$genes$hgnc_symbol, corrected_expression)
 
 # 3. Save to file
-write.table(corrected_df, file = "GE_matrix_corrected_experiment_no_batch_effect_logCPM_voomed.txt",
+write.table(corrected_df, file = "GE_matrix_corrected_experiment_no_batch_effect_logCPM_voomed_2.txt",
             quote = FALSE, sep = ",", row.names = FALSE)
 

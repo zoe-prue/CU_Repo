@@ -111,11 +111,10 @@ for (exp in meta_data$experiment) {
     # Proper design matrix
     design <- model.matrix(~ group, data = meta_comp) 
     cat("\nDesign matrix for", comp_name, ":\n")
-    print(head(design))
+    print(design)
     
     fit <- lmFit(final_residuals[, rownames(meta_comp)], design) %>%
       eBayes()
-    print(design)
     
     # Get correct coefficient name
     coef_name <- colnames(design)[2]  # Will be "groupsevere_GoF" etc.
