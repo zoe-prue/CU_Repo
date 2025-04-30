@@ -125,6 +125,7 @@ for (exp in meta_data$experiment) {
       hgnc_symbol = hgnc_symbols,  # make sure this is in the same order!
       logFC = fit$coefficients[, coef_name],
       pvalue = fit$p.value[, coef_name],
+      coefficients = fit$coefficients,
       fdr = p.adjust(fit$p.value[, coef_name], method = "BH"),
       significant = fdr < fdr_threshold
     )
@@ -179,7 +180,7 @@ final_results <- bind_rows(all_results)
 
 # Save results
 write.csv(final_results, paste0(results_dir, 
-                                "DGE_results_all_comparisons", 
+                                "DGE_results_all_comparisons_in_batches", 
                                 "_fdr_", fdr_threshold, 
                                 ".csv"), row.names = FALSE)
 ########
@@ -219,16 +220,16 @@ ggplot(significant_counts_df, aes(x = experiment, y = number_significant, fill =
 
 dev.off()
 
-de_gene_table <- results %>%
+de_gene_table <- final_results %>%
   filter(significant) %>%
-  select(hgnc_symbol, logFC, pvalue, fdr)
+  select(hgnc_symbol, logFC, pvalue, fdr, experiment, comparison)
 
-write.csv(de_gene_table, "DE_genes_with_values.csv", row.names = FALSE)
+write.csv(de_gene_table, "DE_genes_with_values_w_batch_effect.csv", row.names = FALSE)
 
 # Filter for only significant DE genes
 de_genes_all <- results %>%
   filter(significant) %>%
-  select(hgnc_symbol, logFC, fdr, experiment, comparison)
+  select(hgnc_symbol, logFC, pvalue, fdr, experiment, comparison)
 
 # Optional: clean up labels for plot
 de_genes_all$comparison <- factor(de_genes_all$comparison,
@@ -248,9 +249,13 @@ sig_counts <- final_results %>%
 
 # Save results
 write.csv(sig_counts, paste0(results_dir, 
-                             "DEgenes_by_experiment_comparisons", 
+                             "DEgenes_by_experiment_comparisons_w_batch_effect", 
                              "_fdr_", fdr_threshold, 
                              ".csv"), row.names = FALSE)
+
+install.packages("openxlsx")
+library(openxlsx)
+write.xlsx(de_gene_table, file = paste0("DEgenes_with_batch_effect_all_comparisons_", fdr_threshold, ".xlsx"))
 
 
 

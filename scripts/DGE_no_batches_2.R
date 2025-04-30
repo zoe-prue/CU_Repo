@@ -1,6 +1,7 @@
 # Simplified Differential Gene Expression Analysis
 library(limma)
 library(tidyverse)
+library(dplyr)
 
 setwd("/Users/zoeprue/Desktop/CU_coding/RNA-seq_2/")
 
@@ -64,22 +65,26 @@ run_dge <- function(comp_name, groups) {
   fit <- lmFit(expr_data, design) %>% eBayes()
   coef_name <- paste0("group",groups[2])  # Gets "groupsevere_GoF" format
   
-  # Get results
+  # Get results and filter for significant genes only
   results <- tibble(
     gene_id = rownames(fit$coefficients),
     logFC = fit$coefficients[, coef_name],
     pvalue = fit$p.value[, coef_name],
+    coefficients = fit$coefficients,
     fdr = p.adjust(fit$p.value[, coef_name], method = "BH"),
     significant = fdr < fdr_threshold,
     comparison = comp_name
-  )
+  ) %>%
+    filter(significant)  # This filters for only significant genes
+  
+  return(results)
 }
 
 # Run all comparisons
 results <- map2_dfr(names(comparisons), comparisons, run_dge)
 
 # Save results
-write_csv(results, file.path(results_dir, paste0("DEgenes_no_batch_effect_all_comparisons_", fdr_threshold, ".csv")))
+write_csv(results, file.path(paste0("DEgenes_no_batch_effect_all_comparisons_", fdr_threshold, ".csv")))
 
 # Count significant genes
 sig_counts <- results %>%
@@ -87,5 +92,12 @@ sig_counts <- results %>%
   summarize(significant_genes = sum(significant, na.rm = TRUE))
 
 print(sig_counts)
+
+
+install.packages("openxlsx")
+library(openxlsx)
+write.xlsx(df, file = paste0("DEgenes_no_batch_effect_all_comparisons_", fdr_threshold, ".xlsx"))
+
+
 
 
