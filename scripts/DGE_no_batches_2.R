@@ -70,12 +70,11 @@ run_dge <- function(comp_name, groups) {
     gene_id = rownames(fit$coefficients),
     logFC = fit$coefficients[, coef_name],
     pvalue = fit$p.value[, coef_name],
-    coefficients = fit$coefficients,
     fdr = p.adjust(fit$p.value[, coef_name], method = "BH"),
     significant = fdr < fdr_threshold,
     comparison = comp_name
-  ) %>%
-    filter(significant)  # This filters for only significant genes
+  ) # %>%
+    # filter(significant)  # This filters for only significant genes
   
   return(results)
 }
@@ -84,7 +83,7 @@ run_dge <- function(comp_name, groups) {
 results <- map2_dfr(names(comparisons), comparisons, run_dge)
 
 # Save results
-write_csv(results, file.path(paste0("DEgenes_no_batch_effect_all_comparisons_", fdr_threshold, ".csv")))
+write_csv(results, file.path(paste0("DEgenes_no_batch_effect_all_comparisons_w_nonsig", fdr_threshold, ".csv")))
 
 # Count significant genes
 sig_counts <- results %>%
