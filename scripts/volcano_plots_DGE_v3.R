@@ -20,6 +20,7 @@ meta_data <- read.csv("meta_data/RNAseq_study_design.csv") %>%
   column_to_rownames("sample")
 fdr_thresh = 0.2
 p_thresh = 0.05
+beta_thresh = 0.5
 
 # setwd
 setwd("~/Desktop/CU_coding/RNA-seq/DGE_RNAseq/DEgenes/")
@@ -34,12 +35,12 @@ names(degenes_no_batches)[names(degenes_no_batches) == "gene_id"] <- "hgnc_symbo
 # Prep batch data (includes experiments)
 batch_df <- degenes_in_batches %>%
   select(hgnc_symbol, comparison, experiment, logFC, fdr, pvalue) %>%
-  mutate(source = "batch")  # tag as batch
+  mutate(source = "experiment_effect")  # tag as batch
 
 # Prep no-batch data (same values repeated across experiments)
 nobatch_df <- degenes_no_batches %>%
   select(hgnc_symbol, comparison, logFC, fdr, pvalue) %>%
-  mutate(source = "no_batch")
+  mutate(source = "no_experiment_effect")
 
 # Combine batch and no-batch
 volcano_combined <- bind_rows(batch_df, nobatch_df)
@@ -72,14 +73,14 @@ ggplot(volcano_combined, aes(x = logFC, y = -log10(pvalue),
                   aes(label = hgnc_symbol),
                   size = 2.5,
                   max.overlaps = 100) +
-  scale_color_manual(values = c("batch" = "darkred", "no_batch" = "steelblue")) +
+  scale_color_manual(values = c("Experiment Effect" = "darkred", "No Experiment Effect" = "steelblue")) +
   scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.4)) +
-  labs(title = "Volcano Plot: Batch vs No Batch by Experiment",
+  labs(title = "Volcano Plot: Experiment vs No Experiment Effect",
        x = "log2 Fold Change", y = "-log10 p-value") +
   theme_minimal()
 
 
 # Save
-ggsave("pvalue0.05_logfc0.5_batch_vs_nobatch_facet.pdf", width = 12, height = 6)
+ggsave("pvalue0.05_logfc0.5_experiment_vs_noexperiment_facet.pdf", width = 12, height = 6)
 
 

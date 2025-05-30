@@ -1,309 +1,180 @@
-# plots for DGE
+# Differential Gene Expression Analysis Plots
 # ZP
-# 4/30/25
+# Updated: May 2024
 
-## Library calls
-library(ggplot2)
-library(tidyr)
-library(reshape2)
-library(plyr)
-library(dplyr)
-library(grid)
-library(gridExtra)
-library(data.table)
+#######################
+## LIBRARY IMPORTS ###
+#######################
+library(tidyverse)
 library(ggrepel)
 library(readr)
-library(tidyverse)
-library(ggrepel)  # install.packages("ggrepel") if needed
 
-## read in data
-results_dir <- "~/Desktop/CU_coding/RNA-seq_2/DEgenes"
-meta_data <- read.csv("meta_data/RNAseq_study_design.csv") %>%
+#######################
+## DATA PREPARATION ###
+#######################
+
+# Set global parameters
+FDR_THRESHOLD <- 0.2
+BETA_THRESHOLD <- 0.5
+BASE_DIR <- "~/Desktop/CU_coding/RNA-seq_2"
+
+# Read metadata
+meta_data <- read_csv(file.path(BASE_DIR, "meta_data/RNAseq_study_design.csv")) %>%
   mutate(group = factor(group, levels = c("WT", "mild_GoF", "severe_GoF"))) %>%
   column_to_rownames("sample")
-fdr_thresh = 0.2
-beta_thresh = 0.5
 
-# setwd
-setwd("~/Desktop/CU_coding/RNA-seq/DGE_RNAseq/DEgenes/")
-degenes_in_batches <- read_csv("~/Desktop/CU_coding/RNA-seq_2/DEgenes/DEgenes_by_experiment_comparisons_fdr_0.2.csv")
-degenes_in_batches$gene_id <- NULL
-head(degenes_in_batches)
-degenes_no_batches <- read_csv("~/Desktop/CU_coding/RNA-seq_2/DEgenes/DEgenes_no_batch_effect_all_comparisons_0.2.csv")
-head(degenes_no_batches)
-# make column names match
-names(degenes_no_batches)[names(degenes_no_batches) == "gene_id"] <- "hgnc_symbol"
+# Read DE genes data
+degenes_batch <- read_csv(file.path(BASE_DIR, "DEgenes/DEgenes_by_experiment_comparisons_fdr_0.2.csv"))
+degenes_nobatch <- read_csv(file.path(BASE_DIR, "DEgenes/DEgenes_no_batch_effect_all_comparisons_0.2.csv")) %>%
+  rename(hgnc_symbol = gene_id)
 
-############### PVALUES #######################################################
+# Read and process non-DE genes data
+read_expression_matrix <- function(path) {
+  read_csv(path) %>%
+    select(hgnc_symbol, everything()) %>%
+    pivot_longer(
+      cols = -hgnc_symbol,
+      names_to = "sample",
+      values_to = "expression"
+    ) %>%
+    left_join(
+      meta_data %>% rownames_to_column("sample") %>% select(sample, group),
+      by = "sample"
+    )
+}
 
-# Subset for WT_vs_severe ################################################
-wt_severe_batch <- subset(degenes_in_batches, comparison == "WT_vs_severe")
-library(dplyr)
-library(ggplot2)
+de_batch <- degenes_batch %>%
+  filter(comparison == comparison_name) %>%
+  select(hgnc_symbol, pvalue, logFC, experiment) %>%
+  mutate(gene_type = "DE")
 
-# Subset no-batch data for WT_vs_severe (assumed same across experiments)
-wt_severe_nobatch <- degenes_no_batches %>%
-  filter(comparison == "WT_vs_severe") %>%
-  select(hgnc_symbol, pvalue)
+nonde_batch_sub <- nonde_batch %>%
+  filter(comparison == comparison_name) %>%
+  filter(!hgnc_symbol %in% de_batch$hgnc_symbol) %>%
+  select(hgnc_symbol, pvalue, experiment) %>%
+  mutate(gene_type = "non-DE")
 
-names(wt_severe_nobatch)[2] <- "pvalue_nobatch"  # base R rename
+de_nobatch <- degenes_nobatch %>%
+  filter(comparison == comparison_name) %>%
+  select(hgnc_symbol, pvalue, logFC) %>%
+  mutate(gene_type = "DE")
 
-# Subset batch data for WT_vs_severe (has multiple experiments)
-wt_severe_batch <- degenes_in_batches %>%
-  filter(comparison == "WT_vs_severe") %>%
-  select(hgnc_symbol, pvalue, experiment)
+nonde_nobatch_sub <- nonde_nobatch %>%
+  filter(comparison == comparison_name) %>%
+  filter(!hgnc_symbol %in% de_nobatch$hgnc_symbol) %>%
+  select(hgnc_symbol, pvalue) %>%
+  mutate(gene_type = "non-DE")
 
-names(wt_severe_batch)[2] <- "pvalue_batch"  # base R rename
 
-# Merge batch and no-batch p-values by gene
-merged_all <- merge(wt_severe_batch, wt_severe_nobatch, by = "hgnc_symbol")
 
-library(ggplot2)
-library(ggrepel)  # install.packages("ggrepel") if needed
+#############################
+## DATA PROCESSING ###
+#############################
 
-ggplot(merged_all, aes(x = -log10(pvalue_batch), y = -log10(pvalue_nobatch), color = significant)) +
-  geom_point(alpha = 0.6) +
-  geom_text_repel(aes(label = hgnc_symbol), size = 3, max.overlaps = 15) +  # avoids overlap
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black")) +
-  facet_wrap(~ experiment, scales = "free_y") +
-  labs(
-    x = "-log10 p-value (with batch effect)",
-    y = "-log10 p-value (no batch effect)",
-    title = "WT vs Severe: Batch vs No Batch (by Experiment)"
-  ) +
-  coord_cartesian(clip = "off") +  # Prevent text cutoff
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    plot.margin = margin(10, 30, 10, 10)  # top, right, bottom, left
+# Function to prepare comparison data
+prepare_comparison_data <- function(comparison_name) {
+  
+  # comparison_name <- "WT_vs_severe"
+  # DE genes
+  de_batch <- degenes_batch %>%
+    filter(comparison == comparison_name) %>%
+    select(hgnc_symbol, pvalue, logFC, experiment) %>%
+    mutate(gene_type = "DE")
+  
+  de_nobatch <- degenes_nobatch %>%
+    filter(comparison == comparison_name) %>%
+    select(hgnc_symbol, pvalue, logFC) %>%
+    mutate(gene_type = "DE")
+  
+  # Non-DE genes (assuming all genes not in DE lists are non-DE)
+  # This would need adjustment based on your actual data structure
+  nonde_batch_sub <- nonde_batch %>%
+    filter(!hgnc_symbol %in% de_batch$hgnc_symbol) %>%
+    select(hgnc_symbol, pvalue, experiment) %>%
+    mutate(gene_type = "non-DE")
+  
+  nonde_nobatch_sub <- nonde_nobatch %>%
+    filter(!hgnc_symbol %in% de_nobatch$hgnc_symbol) %>%
+    select(hgnc_symbol, pvalue) %>%
+    mutate(gene_type = "non-DE")
+  
+  # Merge batch and no-batch data
+  merged_data <- full_join(
+    bind_rows(de_batch, nonde_batch_sub),
+    bind_rows(de_nobatch, nonde_nobatch_sub) %>% rename(pvalue_nobatch = pvalue),
+    by = "hgnc_symbol"
   )
+  
+  return(merged_data)
+}
 
-ggsave("wt_vs_severe_batch_vs_nobatch.pdf", width = 10, height = 6)
+# Prepare data for each comparison
+wt_severe_data <- prepare_comparison_data("WT_vs_severe")
+wt_mild_data <- prepare_comparison_data("WT_vs_mild")
+mild_severe_data <- prepare_comparison_data("mild_vs_severe")
 
+#############################
+## PLOTTING FUNCTIONS ###
+#############################
 
-# Subset for WT_vs_mild ###############################################
-# Subset for WT_vs_mild
-wt_mild_batch <- subset(degenes_in_batches, comparison == "WT_vs_mild")
+# Function to create p-value comparison plot
+create_pvalue_plot <- function(data, comparison_name) {
+  ggplot(data, aes(x = -log10(pvalue), y = -log10(pvalue_nobatch))) +
+    # Plot non-DE genes first (as background)
+    geom_point(data = filter(data, gene_type == "non-DE"), 
+               color = "red", alpha = 0.2, size = 1.5) +
+    # Plot DE genes on top
+    geom_point(data = filter(data, gene_type == "DE"), 
+               color = "black", alpha = 0.7, size = 2) +
+    # Label only DE genes
+    geom_text_repel(
+      data = filter(data, gene_type == "DE"),
+      aes(label = hgnc_symbol),
+      size = 3,
+      color = "black",
+      max.overlaps = 20,
+      box.padding = 0.5,
+      segment.color = "grey50"
+    ) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "blue") +
+    facet_wrap(~ experiment, ncol = 2) +
+    labs(
+      x = "-log10 p-value (with batch effect)",
+      y = "-log10 p-value (no batch effect)",
+      title = paste0(comparison_name, ": Batch vs No Batch Effect"),
+      subtitle = "DE genes (black), non-DE genes (red)"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      panel.grid.minor = element_blank(),
+      strip.background = element_rect(fill = "grey90"),
+      strip.text = element_text(face = "bold"),
+      plot.title = element_text(face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+}
 
-library(dplyr)
-library(ggplot2)
-library(ggrepel)  # install.packages("ggrepel") if needed
+# Function to create logFC comparison plot
+create_logfc_plot <- function(data, comparison_name) {
+  # This would use similar structure but plot logFC instead of p-values
+  # Implementation would depend on your specific logFC data
+}
 
-# Subset no-batch data for WT_vs_mild (assumed same across experiments)
-wt_mild_nobatch <- degenes_no_batches %>%
-  filter(comparison == "WT_vs_mild") %>%
-  select(hgnc_symbol, pvalue)
+#############################
+## GENERATE AND SAVE PLOTS ##
+#############################
 
-names(wt_mild_nobatch)[2] <- "pvalue_nobatch"  # base R rename
+# Create and save p-value plots
+p_wt_severe <- create_pvalue_plot(wt_severe_data, "WT vs Severe")
+# ggsave("wt_vs_severe_pvalue_comparison.pdf", p_wt_severe, width = 10, height = 8)
 
-# Subset batch data for WT_vs_mild (has multiple experiments)
-wt_mild_batch <- degenes_in_batches %>%
-  filter(comparison == "WT_vs_mild") %>%
-  select(hgnc_symbol, pvalue, experiment)
+p_wt_mild <- create_pvalue_plot(wt_mild_data, "WT vs Mild")
+ggsave("wt_vs_mild_pvalue_comparison.pdf", p_wt_mild, width = 10, height = 8)
 
-names(wt_mild_batch)[2] <- "pvalue_batch"  # base R rename
+p_mild_severe <- create_pvalue_plot(mild_severe_data, "Mild vs Severe")
+ggsave("mild_vs_severe_pvalue_comparison.pdf", p_mild_severe, width = 10, height = 8)
 
-# Merge batch and no-batch p-values by gene
-merged_mild <- merge(wt_mild_batch, wt_mild_nobatch, by = "hgnc_symbol")
-
-# Optional: define significance (e.g., FDR < 0.2, or p < 0.05)
-merged_mild$significant <- merged_mild$pvalue_nobatch < 0.05  # adjust threshold as needed
-
-# Plot
-ggplot(merged_mild, aes(x = -log10(pvalue_batch), y = -log10(pvalue_nobatch), color = significant)) +
-  geom_point(alpha = 0.6) +
-  geom_text_repel(aes(label = hgnc_symbol), size = 3, max.overlaps = 15) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black")) +
-  facet_wrap(~ experiment, scales = "free_y") +
-  labs(
-    x = "-log10 p-value (with batch effect)",
-    y = "-log10 p-value (no batch effect)",
-    title = "WT vs Mild: Batch vs No Batch (by Experiment)"
-  ) +
-  coord_cartesian(clip = "off") +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    plot.margin = margin(10, 30, 10, 10)
-  )
-
-# Save to PDF
-ggsave("wt_vs_mild_batch_vs_nobatch.pdf", width = 10, height = 6)
-
-# Subset mild vs severe ################################################
-
-# Subset for mild_vs_severe
-mild_severe_batch <- subset(degenes_in_batches, comparison == "mild_vs_severe")
-
-# Subset no-batch data for mild_vs_severe
-mild_severe_nobatch <- degenes_no_batches %>%
-  filter(comparison == "mild_vs_severe") %>%
-  select(hgnc_symbol, pvalue)
-
-names(mild_severe_nobatch)[2] <- "pvalue_nobatch"  # base R rename
-
-# Subset batch data for mild_vs_severe (has multiple experiments)
-mild_severe_batch <- degenes_in_batches %>%
-  filter(comparison == "mild_vs_severe") %>%
-  select(hgnc_symbol, pvalue, experiment)
-
-names(mild_severe_batch)[2] <- "pvalue_batch"  # base R rename
-
-# Merge batch and no-batch p-values by gene
-merged_mild_severe <- merge(mild_severe_batch, mild_severe_nobatch, by = "hgnc_symbol")
-
-# Optional: define significance (e.g., p < 0.05 for no-batch p-values)
-merged_mild_severe$significant <- merged_mild_severe$pvalue_nobatch < 0.05
-
-# Plot
-ggplot(merged_mild_severe, aes(x = -log10(pvalue_batch), y = -log10(pvalue_nobatch), color = significant)) +
-  geom_point(alpha = 0.6) +
-  geom_text_repel(aes(label = hgnc_symbol), size = 3, max.overlaps = 15) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black")) +
-  facet_wrap(~ experiment, scales = "free_y") +
-  labs(
-    x = "-log10 p-value (with batch effect)",
-    y = "-log10 p-value (no batch effect)",
-    title = "Mild vs Severe: Batch vs No Batch (by Experiment)"
-  ) +
-  coord_cartesian(clip = "off") +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    plot.margin = margin(10, 30, 10, 10)
-  )
-
-# Save to PDF
-ggsave("mild_vs_severe_batch_vs_nobatch.pdf", width = 10, height = 6)
-
-############### BETAS #######################################################
-
-# Subset no-batch data for WT_vs_mild
-wt_mild_nobatch <- degenes_no_batches %>%
-  filter(comparison == "WT_vs_mild") %>%
-  select(hgnc_symbol, logFC)
-
-names(wt_mild_nobatch)[2] <- "logFC_nobatch"
-
-# Subset batch data for WT_vs_mild (multiple experiments)
-wt_mild_batch <- degenes_in_batches %>%
-  filter(comparison == "WT_vs_mild") %>%
-  select(hgnc_symbol, logFC, experiment)
-
-names(wt_mild_batch)[2] <- "logFC_batch"
-
-# Merge
-merged_logFC <- merge(wt_mild_batch, wt_mild_nobatch, by = "hgnc_symbol")
-
-# Plot
-ggplot(merged_logFC, aes(x = logFC_batch, y = logFC_nobatch, color = abs(logFC_batch) > 1 | abs(logFC_nobatch) > 1)) +
-  geom_point(alpha = 0.6) +
-  geom_text_repel(aes(label = hgnc_symbol), size = 3, max.overlaps = 15) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "blue") +
-  scale_color_manual(values = c("TRUE" = "blue", "FALSE" = "gray")) +
-  facet_wrap(~ experiment, scales = "free_y") +
-  labs(
-    x = "logFC (with batch effect)",
-    y = "logFC (no batch effect)",
-    title = "WT vs Mild: logFC (Batch vs No Batch)"
-  ) +
-  coord_cartesian(clip = "off") +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    plot.margin = margin(10, 30, 10, 10)
-  )
-
-ggsave("wt_vs_mild_logFC_batch_vs_nobatch.pdf", width = 10, height = 6)
-
-
-#########
-
-# Subset no-batch data for WT_vs_severe
-wt_severe_nobatch <- degenes_no_batches %>%
-  filter(comparison == "WT_vs_severe") %>%
-  select(hgnc_symbol, logFC)
-
-names(wt_severe_nobatch)[2] <- "logFC_nobatch"
-
-# Subset batch data for WT_vs_severe (multiple experiments)
-wt_severe_batch <- degenes_in_batches %>%
-  filter(comparison == "WT_vs_severe") %>%
-  select(hgnc_symbol, logFC, experiment)
-
-names(wt_severe_batch)[2] <- "logFC_batch"
-
-# Merge
-merged_logFC_severe <- merge(wt_severe_batch, wt_severe_nobatch, by = "hgnc_symbol")
-
-# Plot
-ggplot(merged_logFC_severe, aes(x = logFC_batch, y = logFC_nobatch, color = abs(logFC_batch) > 1 | abs(logFC_nobatch) > 1)) +
-  geom_point(alpha = 0.6) +
-  geom_text_repel(aes(label = hgnc_symbol), size = 3, max.overlaps = 15) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "gray")) +
-  facet_wrap(~ experiment, scales = "free_y") +
-  labs(
-    x = "logFC (with batch effect)",
-    y = "logFC (no batch effect)",
-    title = "WT vs Severe: logFC (Batch vs No Batch)"
-  ) +
-  coord_cartesian(clip = "off") +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    plot.margin = margin(10, 30, 10, 10)
-  )
-
-ggsave("wt_vs_severe_logFC_batch_vs_nobatch.pdf", width = 10, height = 6)
-
-###########
-
-# Subset no-batch data for mild_vs_severe
-mild_severe_nobatch <- degenes_no_batches %>%
-  filter(comparison == "mild_GoF_vs_severe_GoF") %>%
-  select(hgnc_symbol, logFC)
-
-names(mild_severe_nobatch)[2] <- "logFC_nobatch"
-
-# Subset batch data for mild_vs_severe
-mild_severe_batch <- degenes_in_batches %>%
-  filter(comparison == "mild_GoF_vs_severe_GoF") %>%
-  select(hgnc_symbol, logFC, experiment)
-
-names(mild_severe_batch)[2] <- "logFC_batch"
-
-# Merge
-merged_logFC_mild_severe <- merge(mild_severe_batch, mild_severe_nobatch, by = "hgnc_symbol")
-
-# Plot
-ggplot(merged_logFC_mild_severe, aes(x = logFC_batch, y = logFC_nobatch, color = abs(logFC_batch) > 1 | abs(logFC_nobatch) > 1)) +
-  geom_point(alpha = 0.6) +
-  geom_text_repel(aes(label = hgnc_symbol), size = 3, max.overlaps = 15) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "gray")) +
-  facet_wrap(~ experiment, scales = "free_y") +
-  labs(
-    x = "logFC (with batch effect)",
-    y = "logFC (no batch effect)",
-    title = "Mild vs Severe: logFC (Batch vs No Batch)"
-  ) +
-  coord_cartesian(clip = "off") +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    plot.margin = margin(10, 30, 10, 10)
-  )
-
-ggsave("mild_vs_severe_logFC_batch_vs_nobatch.pdf", width = 10, height = 6)
+# Similarly create and save logFC plots
+# ...
 
 
