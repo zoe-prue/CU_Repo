@@ -1,6 +1,7 @@
 # volcano plots DGE zp v4
 # Modified based on feedback
 # ZP
+# 5/30/25
 
 library(reshape2)
 library(plyr)
@@ -17,14 +18,20 @@ results_dir <- "~/Desktop/CU_coding/RNA-seq_2/DEgenes"
 meta_data <- read.csv("meta_data/RNAseq_study_design.csv") %>%
   mutate(group = factor(group, levels = c("WT", "mild_GoF", "severe_GoF"))) %>%
   column_to_rownames("sample")
+
+## set thresholds
 fdr_thresh = 0.2
 p_thresh = 0.05
 beta_thresh = 0.5  # Added based on your save filename
 
 # setwd
 setwd("~/Desktop/CU_coding/RNA-seq/DGE_RNAseq/DEgenes/")
+
+# degenes within individual experiments
 degenes_in_batches <- read_csv("~/Desktop/CU_coding/RNA-seq_2/DEgenes/DEgenesDGE_results_all_comparisons_fdr_0.2.csv")
 degenes_in_batches$gene_id <- NULL
+
+# degenes all together with experiment correction
 degenes_no_batches <- read_csv("~/Desktop/CU_coding/RNA-seq_2/DEgenes/DEgenes_no_batch_effect_all_comparisons_w_nonsig0.2.csv")
 
 # make column names match
@@ -101,15 +108,14 @@ ggsave(
   height = 10  # Increased from 6
 )
 
+# prepare to make same graphs but nonsignificant genes are unlabeled black dots
 
 volcano_combined_sig <- volcano_combined %>%
   filter(significant == TRUE)
 
 head(volcano_combined_sig)
 
-
-
-# Create the volcano plot with non-significant genes as black dots ##################
+# Create the volcano plot with non-significant genes as black dots 
 p2 <- ggplot(volcano_combined, aes(x = logFC, y = -log10(pvalue))) +
   # Plot all non-significant genes as black dots first (background)
   geom_point(data = filter(volcano_combined, !significant), 
@@ -149,14 +155,6 @@ p2 <- ggplot(volcano_combined, aes(x = logFC, y = -log10(pvalue))) +
     strip.text = element_text(size = 8),
     legend.position = "bottom"
   )
-
-# # Save with larger width
-# ggsave(
-#   "volcano_comparison_individual_vs_combined_black_nonsig_dots.pdf", 
-#   plot = p2, 
-#   width = 14,
-#   height = 10
-# )
 
 p2 <- p2 + theme(
   panel.background = element_rect(fill = "white", color = NA),

@@ -1,6 +1,7 @@
-# volcano plots DGE zp v4
+# volcano plots degenes comparing experiments zp v4
 # Modified based on feedback
 # ZP
+# 5/30/25
 
 library(reshape2)
 library(plyr)
@@ -11,20 +12,27 @@ library(data.table)
 library(ggrepel)
 library(readr)
 library(tidyverse)
+library(stringr)
 
 ## read in data
 results_dir <- "~/Desktop/CU_coding/RNA-seq_2/DEgenes"
 meta_data <- read.csv("meta_data/RNAseq_study_design.csv") %>%
   mutate(group = factor(group, levels = c("WT", "mild_GoF", "severe_GoF"))) %>%
   column_to_rownames("sample")
+
+## set thresholds
 fdr_thresh = 0.2
 p_thresh = 0.05
 beta_thresh = 0.5  # Added based on your save filename
 
 # setwd
 setwd("~/Desktop/CU_coding/RNA-seq/DGE_RNAseq/DEgenes/")
+
+## read in degenes analyzed within individual experiments
 degenes_in_batches <- read_csv("~/Desktop/CU_coding/RNA-seq_2/DEgenes/DEgenesDGE_results_all_comparisons_fdr_0.2.csv")
 degenes_in_batches$gene_id <- NULL
+
+## read in degenes analyzes and corrected for experimental variation
 degenes_no_batches <- read_csv("~/Desktop/CU_coding/RNA-seq_2/DEgenes/DEgenes_no_batch_effect_all_comparisons_w_nonsig0.2.csv")
 
 # make column names match
@@ -55,53 +63,23 @@ volcano_combined_sig <- bind_rows(batch_df, nobatch_expanded) %>%
   mutate(significant = (abs(logFC) > beta_thresh & pvalue < p_thresh & fdr < fdr_thresh)) %>%
   filter(significant == TRUE)
 
-# Now proceed with your filtering and plotting using volcano_combined
-# 
-# # Step 1: Filter for significant DEGs
-# filtered <- volcano_combined %>%
-#   filter(pvalue < 0.05, abs(logFC) > 0.5)
-
+# count number of experiments that degenes appear in, make that a df
 gene_exp_counts <- volcano_combined_sig %>%
   filter(significant == TRUE) %>%       # Keep only significant rows
   distinct(hgnc_symbol, experiment) %>% # Get unique gene-experiment pairs
   group_by(hgnc_symbol) %>%              # Group by gene
   summarise(n_exp = n())
 
-# Step 3: Get genes significant in >= 2 experiments
+# Get genes significant in >= 2 experiments, save in a list of character strings
 genes_in_2_exp <- gene_exp_counts %>%
   filter(n_exp >= 2) %>%
   pull(hgnc_symbol)
 
-# Step 4: Filter original data to include only those genes
+# Filter original data to include only those genes
 filtered_2exp <- volcano_combined_sig %>%
   filter(hgnc_symbol %in% genes_in_2_exp, source == "Individual Experiment")
 
-# Make sure significant is logical
-# volcano_combined <- volcano_combined %>% mutate(significant = as.logical(significant))
-# 
-# # Count number of distinct experiments per gene where significant == TRUE
-# sig_exp_counts <- filtered %>%
-#   filter(significant) %>%
-#   distinct(hgnc_symbol, experiment) %>%
-#   group_by(hgnc_symbol) %>%
-#   summarise(n_exp = n())
-# 
-
-# Combine with batch data
-# volcano_combined <- bind_rows(batch_df, nobatch_expanded) %>%
-  # mutate(significant = (abs(logFC) > beta_thresh & pvalue < p_thresh))
-
-# # Step 1: Get genes significant in exactly 2 experiments
-# genes_in_2_exp <- volcano_combined %>%
-#   filter(significant) %>%
-#   distinct(hgnc_symbol, experiment) %>%
-#   group_by(hgnc_symbol) %>%
-#   summarise(n_exp = n()) %>%
-#   filter(n_exp == 2) %>%
-#   pull(hgnc_symbol)
-
-library(stringr)
-
+# combine data that will be used for labeling points
 volcano_combined_label <- filtered_2exp %>%
   filter(significant, hgnc_symbol %in% genes_in_2_exp) %>%
   mutate(
@@ -113,8 +91,7 @@ volcano_combined_label <- filtered_2exp %>%
   filter(n() > 1) %>%
   ungroup()
 
-
-# Step 3: Plot
+# Plot
 p1 <- ggplot(volcano_combined_label, aes(x = logFC, y = -log10(pvalue))) +
   geom_point(color = "red", alpha = 0.7) +
   geom_text_repel(aes(label = label),
@@ -140,7 +117,6 @@ p1 <- p1 + theme(
   strip.background = element_rect(fill = "white", color = NA)
 )
 
-
 ggsave(
   "volcano_common_DEGenes_dots_all_exps.png",
   plot = p1,
@@ -149,16 +125,7 @@ ggsave(
   dpi = 300  # Optional: set resolution for high-quality output
 )
 
-
-# # Ensure labels are clean and consistent
-# volcano_combined_comparisons <- filtered_2exp %>%
-#   filter(significant, hgnc_symbol %in% genes_in_2_exp) %>%
-#   mutate(
-#     hgnc_symbol = str_trim(hgnc_symbol),
-#     experiment = str_trim(experiment),
-#     comparison = str_trim(comparison),  # ensure comparison is clean
-#     label = paste0(hgnc_symbol, " (", experiment, ")")
-#   )
+###########################
 
 # Plot with faceting by comparison
 p2 <- ggplot(volcano_combined_label, aes(x = logFC, y = -log10(pvalue))) +
@@ -193,7 +160,6 @@ p2 <- p2 + theme(
   strip.background = element_rect(fill = "white", color = NA)
 )
 
-
 ggsave(
   "volcano_common_DEGenes_dots_all_exps_w_comparisons.png",
   plot = p2,
@@ -201,5 +167,4 @@ ggsave(
   height = 10,
   dpi = 300  # Optional: set resolution for high-quality output
 )
-
 
